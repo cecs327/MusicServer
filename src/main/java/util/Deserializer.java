@@ -1,4 +1,4 @@
-package utility;
+package util;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -43,21 +43,22 @@ public class Deserializer {
 
     public Deserializer() throws IOException {
         musicDatabase = new ArrayList<>();
-        playableSongs = new HashMap<>();
         userLibrary = new HashMap<>();
         ownedIDs = new HashSet<>();
 
-        // loadOwnedMusicIDs();
-        findPlayableSongs();
+        loadOwnedMusicIDs();
+        musicDatabase = (ArrayList) deserializeSongsFromJson();
+
+        // userLibrary = setUserLibrary();
     }
 
     // Loads the song IDs of OWNED music into a Set for lookup.
     private void loadOwnedMusicIDs() {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("music.json");
+        String musicPath = Thread.currentThread().getContextClassLoader().getResource("music").getPath();
 
-        System.out.println(url.toString());
+        System.out.println(musicPath.toString());
 
-        File dir = new File(url.toString());
+        File dir = new File(musicPath.toString());
         System.out.println(dir.listFiles());
         for (File file : dir.listFiles()) {
             String filename = file.getName();
@@ -82,48 +83,6 @@ public class Deserializer {
     }
 
     /**
-     * Returns the song information in the Music JSON as an ArrayList.
-     *
-     * @return
-     */
-    public ArrayList<Collection> getMusicDatabase() {
-        return musicDatabase;
-    }
-
-    /**
-     * Returns a dictionary of the user's
-     * owned mp3s in the music directory.
-     *
-     * @return
-     */
-    public HashSet<Integer> getOwnedIDs() {
-        return ownedIDs;
-    }
-
-    /**
-     * Returns a dictionary of songs that CAN be played
-     * (the mp3 files exist in the music directory).
-     * Key: song release ID
-     * Value: the mp3 file name (without '.mp3' extension)
-     *
-     * @return
-     */
-    public HashMap<Integer, String> getPlayableSongs() {
-        return playableSongs;
-    }
-
-    /**
-     * Returns a dictionary of song information.
-     * Key: song release ID
-     * Value: the song info as a Collection
-     *
-     * @return
-     */
-    public HashMap<Integer, Collection> getUserLibrary() {
-        return userLibrary;
-    }
-
-    /**
      * Returns and stores a dictionary of songs that are playable
      * (i.e. song mp3 files that exist in the music directory).
      *
@@ -131,10 +90,8 @@ public class Deserializer {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public HashMap<Integer, String> findPlayableSongs() throws IOException {
-        HashMap<Integer, String> playableSongs = new HashMap<>();
-
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    public List<Collection> deserializeSongsFromJson() throws IOException {
+        List<Collection> songs = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(
@@ -150,27 +107,23 @@ public class Deserializer {
 
             // Parse the json file
             while (jsonReader.hasNext()) {
-                Release release;
-                Artist artist;
-                Song song;
-
-                // If the artist has already been parsed, don't add new object.
-                boolean oldArtist = false;
-
                 // Clear the first "{" for each json object
                 jsonReader.beginObject();
 
                 jsonReader.nextName();
-                release = gson.fromJson(jsonReader, Release.class);
+                Release release = gson.fromJson(jsonReader, Release.class);
 
                 jsonReader.nextName();
-                artist = gson.fromJson(jsonReader, Artist.class);
+                Artist artist = gson.fromJson(jsonReader, Artist.class);
 
                 jsonReader.nextName();
-                song = gson.fromJson(jsonReader, Song.class);
+                Song song = gson.fromJson(jsonReader, Song.class);
 
                 jsonReader.endObject();
 
+                songs.add(new Collection(release, artist, song));
+
+                /*
                 // Check if artist was previously parsed
                 for (int i = 0; i < musicDatabase.size(); i++) {
                     Artist artistInCollection = musicDatabase.get(i).getArtist();
@@ -184,18 +137,17 @@ public class Deserializer {
                 if (!oldArtist) {
                     Collection newCollection = new Collection(release, artist, song);
 
-                    /** Add the Collection to a list and a dictionary **/
                     musicDatabase.add(newCollection);
 
                     if (ownedIDs.contains((int) newCollection.getId()))
                         userLibrary.put((int) newCollection.getId(), newCollection);
                 }
+                */
             }
             jsonReader.endArray();
         }
 
-        this.playableSongs = playableSongs;
-        return playableSongs;
+        return songs;
     }
 
     public List<Collection> deserializeMusicLibrary() throws IOException {
@@ -348,5 +300,47 @@ public class Deserializer {
         } finally {
             return users;
         }
+    }
+
+    /**
+     * Returns the song information in the Music JSON as an ArrayList.
+     *
+     * @return
+     */
+    public ArrayList<Collection> getMusicDatabase() {
+        return musicDatabase;
+    }
+
+    /**
+     * Returns a dictionary of the user's
+     * owned mp3s in the music directory.
+     *
+     * @return
+     */
+    public HashSet<Integer> getOwnedIDs() {
+        return ownedIDs;
+    }
+
+    /**
+     * Returns a dictionary of songs that CAN be played
+     * (the mp3 files exist in the music directory).
+     * Key: song release ID
+     * Value: the mp3 file name (without '.mp3' extension)
+     *
+     * @return
+     */
+    public HashMap<Integer, String> getPlayableSongs() {
+        return playableSongs;
+    }
+
+    /**
+     * Returns a dictionary of song information.
+     * Key: song release ID
+     * Value: the song info as a Collection
+     *
+     * @return
+     */
+    public HashMap<Integer, Collection> getUserLibrary() {
+        return userLibrary;
     }
 }

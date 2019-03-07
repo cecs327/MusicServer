@@ -1,4 +1,4 @@
-package utility;
+package util;
 
 import model.Collection;
 import model.SearchResult;

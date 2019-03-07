@@ -1,4 +1,4 @@
-package utility;
+package util;
 
 import com.google.gson.*;
 import model.Collection;
