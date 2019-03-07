@@ -56,9 +56,9 @@ public class Deserializer {
     private void loadOwnedMusicIDs() {
         String musicPath = Thread.currentThread().getContextClassLoader().getResource("music").getPath();
 
-        System.out.println(musicPath.toString());
+        System.out.println(musicPath);
 
-        File dir = new File(musicPath.toString());
+        File dir = new File(musicPath);
         System.out.println(dir.listFiles());
         for (File file : dir.listFiles()) {
             String filename = file.getName();

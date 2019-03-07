@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
-public class PlaylistDispatcher {
+public class PlaylistDispatcher implements DispatcherService {
     static final int FRAGMENT_SIZE = 8192;
 
     public PlaylistDispatcher()

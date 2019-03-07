@@ -124,11 +124,13 @@ public class Dispatcher implements DispatcherInterface {
     * @objectName: It is the core class that contaions the remote methods
     * each object can contain several remote methods
     */
+    @Deprecated
     public void registerDispatcher(Object remoteMethod, String objectName)
     {
         dispatchers.put(objectName, remoteMethod);
     }
 
+    // Use this one
     public void registerDispatcher(String dispatcherName, DispatcherService dispatcher) {
         dispatchers.put(dispatcherName, dispatcher);
     }
@@ -136,29 +138,4 @@ public class Dispatcher implements DispatcherInterface {
     public HashMap<String, Object> getDispatchers() {
         return dispatchers;
     }
-
-    /*  Testing
-    public static void core(String[] args) {
-        // Instance of the Dispatcher
-        Dispatcher dispatcher = new Dispatcher();
-        // Instance of the services that te dispatcher can handle
-        SongDispatcher songDispatcher = new SongDispatcher();
-
-        dispatcher.registerObject(songDispatcher, "SongServices");
-
-        // Testing  the dispatcher function
-        // First we read the request. In the final implementation the jsonRequest
-        // is obtained from the communication module
-        try {
-            String jsonRequest = new String(Files.readAllBytes(Paths.get("./getSongChunk.json")));
-            String ret = dispatcher.dispatch(jsonRequest);
-            System.out.println(ret);
-
-            //System.out.println(jsonRequest);
-        } catch (Exception e)
-        {
-            System.out.println(e);
-        }
-        
-    }*/
 }

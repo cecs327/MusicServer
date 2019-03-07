@@ -40,7 +40,7 @@ public class TestDispatch {
     }
 
     @Test
-    public void dispatch() {
+    public void loginDispatch() {
         Dispatcher dispatcher = new Dispatcher();
 
         Gson gson = new Gson();
