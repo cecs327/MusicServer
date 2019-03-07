@@ -9,12 +9,12 @@ public class ServerCommunicationProtocol extends Thread{
     byte[] packetSize = new byte[FRAGMENT_SIZE];
 
 
-    DatagramSocket mySocket = null;                               // Server socket
-    DataInputStream inputStream = null;                         // Input stream
-    DataOutputStream mp3Out = null;                                 // Output stream
-    Socket clientSocket = null;                                 // Client socket
+    DatagramSocket mySocket;
+    DataInputStream inputStream;
+    DataOutputStream mp3Out;
+    Socket clientSocket;
     String input;
-    Dispatcher myDispatcher = null;
+    Dispatcher myDispatcher;
     int portNumber;
 
     ServerCommunicationProtocol(int num){

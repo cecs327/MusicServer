@@ -6,6 +6,7 @@ import model.*;
 import model.Collection;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 
@@ -46,16 +47,17 @@ public class Deserializer {
         userLibrary = new HashMap<>();
         ownedIDs = new HashSet<>();
 
-        loadOwnedMusicIDs();
+        // loadOwnedMusicIDs();
         findPlayableSongs();
     }
 
     // Loads the song IDs of OWNED music into a Set for lookup.
     private void loadOwnedMusicIDs() {
-        String name = null;
-        name = Thread.currentThread().getContextClassLoader().getResource("music").getPath();
+        URL url = Thread.currentThread().getContextClassLoader().getResource("music.json");
 
-        File dir = new File(name);
+        System.out.println(url.toString());
+
+        File dir = new File(url.toString());
         System.out.println(dir.listFiles());
         for (File file : dir.listFiles()) {
             String filename = file.getName();
@@ -136,7 +138,7 @@ public class Deserializer {
 
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(
-                        getClass().getResourceAsStream("/appdata/music.json")));
+                        getClass().getResourceAsStream("/music.json")));
 
 
              JsonReader jsonReader = new JsonReader(br)) {
@@ -200,7 +202,7 @@ public class Deserializer {
         List<Collection> musicDatabase = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("/appdata/music.json")));
+                new InputStreamReader(getClass().getResourceAsStream("/music.json")));
              JsonReader jsonReader = new JsonReader(br)) {
 
             Gson gson = new Gson();
@@ -299,7 +301,7 @@ public class Deserializer {
         List<User> users = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("/appdata/user.json")));
+                new InputStreamReader(getClass().getResourceAsStream("/user.json")));
              JsonReader jr = new JsonReader(br)) {
 
             jr.beginObject(); // file start '{'

@@ -61,7 +61,7 @@ public class Serializer {
         try (PrintWriter writer =
                 new PrintWriter(
                         new File(
-                                getClass().getResource("/appdata/user.json")
+                                getClass().getResource("/user.json")
                                         .getPath()))) {
 
             Gson gson = new GsonBuilder()
@@ -87,7 +87,7 @@ public class Serializer {
         try (PrintWriter writer =
                 new PrintWriter(
                         new File(
-                                getClass().getResource("/appdata/user.json")
+                                getClass().getResource("/user.json")
                                         .getPath()))) {
 
             Gson gson = new GsonBuilder()

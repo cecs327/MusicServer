@@ -14,10 +14,10 @@ public class ClientRequestPacketHandler extends Thread {
         this.packet = d;                                            // Set packet as received request packet
 
         this.myDispatcher = new Dispatcher();                       // Create a dispatcher object to process request
-        myDispatcher.registerObject(new SongDispatcher(), "SongServices");  // Add dispatcher modules
-        myDispatcher.registerObject(new SearchResultDispatcher(), "SearchResultServices");
-        myDispatcher.registerObject(new LoginDispatcher(), "LoginServices");
-        myDispatcher.registerObject(new PlaylistDispatcher(), "PlaylistServices");
+        myDispatcher.registerDispatcher(new SongDispatcher(), "SongServices");  // Add dispatcher modules
+        myDispatcher.registerDispatcher(new SearchResultDispatcher(), "SearchResultServices");
+        myDispatcher.registerDispatcher(new LoginDispatcher(), "LoginServices");
+        myDispatcher.registerDispatcher(new PlaylistDispatcher(), "PlaylistServices");
         System.out.println("New client packet handler created");
     }
 

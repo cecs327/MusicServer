@@ -45,7 +45,7 @@ public class Server {
         }
 
 
-        ServerCommunicationProtocol myServer = new ServerCommunicationProtocol(PORT_NUMBER);
-        myServer.start();
+        ServerCommunicationProtocol scp = new ServerCommunicationProtocol(PORT_NUMBER);
+        scp.start();
     }
 }
