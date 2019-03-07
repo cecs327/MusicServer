@@ -1,0 +1,20 @@
+[
+  {
+    "method": "getSongChunk",
+    "dispatcher": "SongDispatcher",
+    "callSemantic": "MAYBE",
+    "params": {
+      "song": "",
+      "fragment": ""
+    }
+  },
+  {
+    "method": "login",
+    "dispatcher": "LoginDispatcher",
+    "callSemantic": "AT_LEAST_ONCE",
+    "params": {
+      "username": "",
+      "password": ""
+    }
+  }
+]
