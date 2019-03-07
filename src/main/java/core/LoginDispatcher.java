@@ -1,4 +1,4 @@
-package main;
+package core;
 
 import com.google.gson.JsonObject;
 import model.User;
@@ -8,14 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
-public class LoginDispatcher {
+public class LoginDispatcher implements DispatcherService {
     static final int FRAGMENT_SIZE = 8192;
-
-    public LoginDispatcher()
-    {
-
-    }
-
 
     /*
      * login: return login token if authorized

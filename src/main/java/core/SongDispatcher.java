@@ -1,5 +1,5 @@
-package main; /**
-* SongDispatcher is the main responsable for obtaining the songs 
+package core; /**
+* SongDispatcher is the core responsable for obtaining the songs
 *
 * @author  Oscar Morales-Ponce
 * @version 0.15
@@ -10,14 +10,10 @@ import java.io.*;
 import java.util.Base64;
 
 
- public class SongDispatcher
+ public class SongDispatcher implements DispatcherService
 {
     static final int FRAGMENT_SIZE = 8192;
-    public SongDispatcher()
-    {
-        
-    }
-    
+
     /* 
     * getSongChunk: Gets a chunk of a given song
     * @param key: Song ID. Each song has a unique ID 
@@ -32,8 +28,8 @@ import java.util.Base64;
         FileInputStream inputStream = new FileInputStream(file);
         inputStream.skip(fragment * FRAGMENT_SIZE);
         inputStream.read(buf);
-        inputStream.close(); 
-        // Encode in base64 so it can be transmitted 
+        inputStream.close();
+
          return Base64.getEncoder().encodeToString(buf);
     }
     
@@ -44,9 +40,7 @@ import java.util.Base64;
     public Integer getFileSize(Long key) throws FileNotFoundException, IOException
     {
         File file = new File(Thread.currentThread().getContextClassLoader().getResource("music").getPath() + "\\" + key + ".mp3");
-        Integer total =  (int)file.length();
-
-        return total;
+        return (int)file.length();
     }
     
 }

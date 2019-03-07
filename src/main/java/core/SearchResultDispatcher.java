@@ -1,10 +1,10 @@
-package main;
+package core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import model.Collection;
 import model.SearchResult;
-import utility.Search;
+import util.Search;
 
 
 import java.io.*;

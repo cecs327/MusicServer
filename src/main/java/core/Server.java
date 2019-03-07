@@ -1,8 +1,8 @@
-package main;
+package core;
 
 import model.Collection;
 import model.User;
-import utility.Deserializer;
+import util.Deserializer;
 
 import java.io.IOException;
 import java.util.ArrayList;

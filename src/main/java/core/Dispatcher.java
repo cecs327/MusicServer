@@ -1,4 +1,4 @@
-package main; /**
+package core; /**
 * The Dispatcher implements DispatcherInterface. 
 *
 * @author  Oscar Morales-Ponce
@@ -46,6 +46,8 @@ public class Dispatcher implements DispatcherInterface {
         JsonParser parser = new JsonParser();
         JsonObject jsonRequest = parser.parse(request).getAsJsonObject();
 
+        System.out.println(jsonRequest.get("dispatcher"));
+
         try {
             // Obtains the object pointing to SongServices
             Object object = dispatchers.get(jsonRequest.get("dispatcher").getAsString());
@@ -66,7 +68,7 @@ public class Dispatcher implements DispatcherInterface {
             Class[] types =  method.getParameterTypes();
             Object[] parameter = new Object[types.length];
             String[] strParam = new String[types.length];
-            JsonObject jsonParam = jsonRequest.get("param").getAsJsonObject();
+            JsonObject jsonParam = jsonRequest.get("params").getAsJsonObject();
             int j = 0;
             for (Map.Entry<String, JsonElement>  entry  :  jsonParam.entrySet())
             {
@@ -119,7 +121,7 @@ public class Dispatcher implements DispatcherInterface {
     * registerObject: It register the objects that handle the request
     * @param remoteMethod: It is the name of the method that
     *  objectName implements.
-    * @objectName: It is the main class that contaions the remote methods
+    * @objectName: It is the core class that contaions the remote methods
     * each object can contain several remote methods
     */
     public void registerDispatcher(Object remoteMethod, String objectName)
@@ -127,8 +129,16 @@ public class Dispatcher implements DispatcherInterface {
         dispatchers.put(objectName, remoteMethod);
     }
 
+    public void registerDispatcher(String dispatcherName, DispatcherService dispatcher) {
+        dispatchers.put(dispatcherName, dispatcher);
+    }
+
+    public HashMap<String, Object> getDispatchers() {
+        return dispatchers;
+    }
+
     /*  Testing
-    public static void main(String[] args) {
+    public static void core(String[] args) {
         // Instance of the Dispatcher
         Dispatcher dispatcher = new Dispatcher();
         // Instance of the services that te dispatcher can handle
