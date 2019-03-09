@@ -1,5 +1,3 @@
-import core.Dispatcher;
-import core.DispatcherService;
 import core.SongDispatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,7 +5,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TestSongDispatcher {
+class SongDispatcherTest {
     private SongDispatcher dispatcher;
 
     @BeforeEach
@@ -30,12 +28,7 @@ class TestSongDispatcher {
 
     @Test
     void getSongFileSize() {
-        Integer songSize = null;
-        try {
-            songSize = dispatcher.getFileSize(41838L);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Integer songSize = dispatcher.getFileSize(41838L);
 
         assertEquals(songSize, 7278929);
     }

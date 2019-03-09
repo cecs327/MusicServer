@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TestDispatcher {
+class DispatcherTest {
     private Dispatcher dispatcher;
     private static Gson gson;
 
@@ -28,11 +28,11 @@ class TestDispatcher {
         gson = new Gson();
 
         jsonMusicObject = gson.fromJson(new InputStreamReader(
-                TestDispatcher.class.getResourceAsStream("/music.json")),
+                DispatcherTest.class.getResourceAsStream("/music.json")),
                 JsonArray.class);
 
         jsonMethodsObject = gson.fromJson(new InputStreamReader(
-                TestDispatcher.class.getResourceAsStream("/methods.json")),
+                DispatcherTest.class.getResourceAsStream("/methods.json")),
                 JsonObject.class);
     }
 

@@ -4,7 +4,7 @@ import util.Deserializer;
 
 import java.io.IOException;
 
-class TestDeserializer {
+class DeserializerTest {
     private static Deserializer deserializer;
 
     @BeforeAll
