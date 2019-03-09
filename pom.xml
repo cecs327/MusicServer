@@ -57,5 +57,17 @@
             <scope>test</scope>
         </dependency>
         <!-- END Jupiter JUnit 5.4.0 dependencies -->
+        <!-- https://mvnrepository.com/artifact/log4j/log4j -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.jcabi/jcabi-log -->
+        <dependency>
+            <groupId>com.jcabi</groupId>
+            <artifactId>jcabi-log</artifactId>
+            <version>0.18</version>
+        </dependency>
     </dependencies>
 </project>
