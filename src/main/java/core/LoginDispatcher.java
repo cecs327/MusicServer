@@ -20,13 +20,17 @@ public class LoginDispatcher implements DispatcherService {
     {
         User currentSession = Server.usersInfo.get(username+password);
 
+        System.out.println(Server.usersInfo);
+
+        Server.currentSessions.add(currentSession);
+
         JsonObject loginToken = new JsonObject();
         if(currentSession != null)
         {
-            Server.currentSessions.add(currentSession);
-
             loginToken.addProperty("loginToken", Integer.toString(Server.currentSessions.indexOf(currentSession)));
             System.out.println(loginToken);
+        } else {
+            loginToken.addProperty("loginToken", Integer.toString(Server.currentSessions.size() - 1));
         }
 
         byte[] loginBytes = loginToken.toString().getBytes();
