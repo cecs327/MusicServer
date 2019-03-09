@@ -23,29 +23,26 @@ public class Server {
     public static List<User> userList;
     public static HashMap<String,User> usersInfo = new HashMap<>();
 
-    static {
-        try {
-            d = new Deserializer();
-            userList = d.deserializeUsers();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static List<Collection> songList = d.getMusicDatabase();
+    public static List<Collection> songList;
 
     public static void main(String [] args)
     {
-        currentSessions.add(new User("dummy", "dummy", "dummy"));
-        for (User u : userList) {
-            if (usersInfo.containsValue(u)) {
-                throw new IllegalStateException("Duplicate user found in usersInfo");
+        try {
+            d = new Deserializer();
+            songList = d.getMusicDatabase();
+            userList = d.deserializeUsers();
+            currentSessions.add(new User("dummy", "dummy", "dummy"));
+            for (User u : userList) {
+                if (usersInfo.containsValue(u)) {
+                    throw new IllegalStateException("Duplicate user found in usersInfo");
+                }
+                usersInfo.put(u.getUsername()+u.getPassword(), u);
             }
-            usersInfo.put(u.getUsername()+u.getPassword(), u);
+
+            ServerCommunicationProtocol scp = new ServerCommunicationProtocol(PORT_NUMBER);
+            scp.start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-
-        ServerCommunicationProtocol scp = new ServerCommunicationProtocol(PORT_NUMBER);
-        scp.start();
     }
 }
