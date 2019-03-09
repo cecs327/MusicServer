@@ -13,10 +13,12 @@ import java.lang.reflect.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import org.apache.log4j.Logger;
 
 
 public class Dispatcher implements DispatcherInterface {
-    HashMap<String, Object> dispatchers;
+    private static final Logger LOGGER = Logger.getLogger(Dispatcher.class);
+    private HashMap<String, Object> dispatchers;
 
 
     public Dispatcher() {
@@ -37,13 +39,13 @@ public class Dispatcher implements DispatcherInterface {
     }
     */
 
-    private DispatcherService getDispatcher(JsonObject jsonRequest) {
+    private Dispatcher getDispatcher(JsonObject jsonRequest) {
         String dispatcherString = jsonRequest.get("dispatcher").getAsString();
-        return (DispatcherService) dispatchers.get(dispatcherString);
+        return (Dispatcher) dispatchers.get(dispatcherString);
     }
 
     // TODO: Extract to class
-    public Method getMethodFromJson(DispatcherService dispatcher, JsonObject jsonRequest) {
+    public Method getMethodFromJson(Dispatcher dispatcher, JsonObject jsonRequest) {
         Method[] methods = dispatcher.getClass().getMethods();
         for (Method method : methods) {
             if (method.getName().equals(jsonRequest.get("method").getAsString()))
@@ -90,14 +92,14 @@ public class Dispatcher implements DispatcherInterface {
         return typedParameters;
     }
 
-    public JsonObject getRemoteMethodResponseObject(DispatcherService dispatcher, Method method, Object[] parameters) {
+    private JsonObject getRemoteMethodResponseObject(Dispatcher dispatcher, Method method, Object[] parameters) {
         JsonObject jsonReturn = new JsonObject();
 
         try {
             String ret = method.invoke(dispatcher, parameters).toString();
             jsonReturn.addProperty("ret", ret);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("getRemoteMethodResponseObject Method Error: ", e);
             jsonReturn.addProperty("error", "Error while trying to invoke remote method.");
         }
 
@@ -108,7 +110,7 @@ public class Dispatcher implements DispatcherInterface {
         JsonParser parser = new JsonParser();
         JsonObject jsonRequest = parser.parse(request).getAsJsonObject();
 
-        DispatcherService dispatcher = getDispatcher(jsonRequest);
+        Dispatcher dispatcher = getDispatcher(jsonRequest);
         Method method = getMethodFromJson(dispatcher, jsonRequest);
         Class[] types = method.getParameterTypes();
 
