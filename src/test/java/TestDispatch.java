@@ -1,46 +1,50 @@
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import core.Dispatcher;
 import core.LoginDispatcher;
 import core.SongDispatcher;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.FileReader;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
-public class TestDispatch {
-    String jsonMusicString;
-    String jsonMethodsString;
+import static org.junit.jupiter.api.Assertions.*;
 
-    @Before
-    public void init() throws Exception {
+class TestDispatch {
+    private static String jsonMusicString;
+    private static String jsonMethodsString;
+
+    @BeforeAll
+    static void setup() {
         Gson gson = new Gson();
 
-        JsonArray jsonMusicObject = gson.fromJson(new InputStreamReader(getClass().getResourceAsStream("/music.json")), JsonArray.class);
-        JsonArray jsonMethodsObject = gson.fromJson(new InputStreamReader(getClass().getResourceAsStream("/methods.json")), JsonArray.class);
+        JsonArray jsonMusicObject = gson.fromJson(new InputStreamReader(
+                TestDispatch.class.getResourceAsStream("/music.json")),
+                JsonArray.class);
+        JsonArray jsonMethodsObject = gson.fromJson(new InputStreamReader(
+                TestDispatch.class.getResourceAsStream("/methods.json")),
+                JsonArray.class);
         jsonMusicString = jsonMusicObject.toString();
         jsonMethodsString = jsonMethodsObject.toString();
+
+        assertNotNull(jsonMusicString, "Music JSON string is null.");
+        assertNotNull(jsonMethodsString, "Methods JSON string is null.");
 
         System.out.println(jsonMusicString);
         System.out.println(jsonMethodsString);
     }
 
     @Test
-    public void registerDispatcherService() {
+    void registerDispatcherService() {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.registerDispatcher(SongDispatcher.class.getSimpleName(), new SongDispatcher());
 
-        assert(!dispatcher.getDispatchers().isEmpty());
+        assertFalse(dispatcher.getDispatchers().isEmpty());
     }
 
     @Test
-    public void loginDispatch() {
+    void loginDispatch() {
         Dispatcher dispatcher = new Dispatcher();
 
         Gson gson = new Gson();

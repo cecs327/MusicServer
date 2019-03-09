@@ -1,10 +1,11 @@
 import core.Server;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
 
-public class TestServer {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class TestServer {
     @Test
-    public void testServer() {
+    void testServer() {
         Server server = new Server();
         assertNotNull(server);
     }

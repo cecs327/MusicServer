@@ -1,17 +1,16 @@
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import util.Deserializer;
 
 import java.io.IOException;
 
-public class TestDeserializer {
-    private Deserializer deserializer;
+class TestDeserializer {
+    private static Deserializer deserializer;
 
-    @Before
-    public void init() {
+    @BeforeAll
+    static void setup() {
         try {
             deserializer = new Deserializer();
-            System.out.println("Hey");
         } catch (IOException e) {
             System.out.println("Error: Deserializer could not successfully be made");
             e.printStackTrace();
@@ -19,7 +18,7 @@ public class TestDeserializer {
     }
 
     @Test
-    public void deserializePlaylists() {
+    void deserializePlaylists() {
 
     }
 }

@@ -1,12 +1,12 @@
 import core.SongDispatcher;
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
-public class TestSongDispatcher {
+import static org.junit.jupiter.api.Assertions.*;
+
+class TestSongDispatcher {
     @Test
-    public void getSong() {
+    void getSong() {
         SongDispatcher dispatcher = new SongDispatcher();
 
         try {
@@ -14,7 +14,7 @@ public class TestSongDispatcher {
 
             System.out.println(song);
 
-            Assert.assertNotNull(song);
+            assertNotNull(song);
         } catch (IOException e) {
             e.printStackTrace();
         }
