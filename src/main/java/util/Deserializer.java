@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import model.*;
 import model.Collection;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.URL;
@@ -19,6 +20,7 @@ import java.util.*;
  * 4. the user's set of owned mp3s (from the music folder)
  */
 public class Deserializer {
+    private static final Logger LOGGER = Logger.getLogger(Deserializer.class);
     /**
      * A list of ALL songs (from the Music JSON).
      */
@@ -297,6 +299,8 @@ public class Deserializer {
             }
             jr.endArray(); // "userList" ']'
             jr.endObject(); // file end
+        } catch (Exception e) {
+            LOGGER.error("Error while deserializing users: " , e);
         } finally {
             return users;
         }
