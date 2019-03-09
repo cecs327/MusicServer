@@ -1,26 +1,22 @@
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import core.Dispatcher;
 import core.LoginDispatcher;
 import core.SongDispatcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.InputStreamReader;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TestDispatch {
+class TestDispatcher {
     private Dispatcher dispatcher;
     private static Gson gson;
 
@@ -32,11 +28,11 @@ class TestDispatch {
         gson = new Gson();
 
         jsonMusicObject = gson.fromJson(new InputStreamReader(
-                TestDispatch.class.getResourceAsStream("/music.json")),
+                TestDispatcher.class.getResourceAsStream("/music.json")),
                 JsonArray.class);
 
         jsonMethodsObject = gson.fromJson(new InputStreamReader(
-                TestDispatch.class.getResourceAsStream("/methods.json")),
+                TestDispatcher.class.getResourceAsStream("/methods.json")),
                 JsonObject.class);
     }
 
@@ -92,7 +88,7 @@ class TestDispatch {
 
     @ParameterizedTest
     @MethodSource("getSongChunkProvider")
-    void loginDispatch(JsonObject songChunkMethodJson) {
+    void songChunkDispatch_notError(JsonObject songChunkMethodJson) {
 
         dispatcher.registerDispatcher(LoginDispatcher.class.getSimpleName(), new LoginDispatcher());
         dispatcher.registerDispatcher(SongDispatcher.class.getSimpleName(), new SongDispatcher());
