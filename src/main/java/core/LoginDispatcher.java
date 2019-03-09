@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
-public class LoginDispatcher implements DispatcherService {
+public class LoginDispatcher extends Dispatcher implements DispatcherService {
     private static final int FRAGMENT_SIZE = 8192;
 
     /*
