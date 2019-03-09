@@ -1,10 +1,10 @@
 package core; /**
-* The Dispatcher implements DispatcherInterface. 
-*
-* @author  Oscar Morales-Ponce
-* @version 0.15
-* @since   02-11-2019 
-*/
+ * The Dispatcher implements DispatcherInterface.
+ *
+ * @author Oscar Morales-Ponce
+ * @version 0.15
+ * @since 02-11-2019
+ */
 
 import java.util.HashMap;
 import java.util.*;
@@ -15,15 +15,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 
-
-
-
 public class Dispatcher implements DispatcherInterface {
     HashMap<String, Object> dispatchers;
 
 
-    public Dispatcher()
-    {
+    public Dispatcher() {
         dispatchers = new HashMap<String, Object>();
     }
 
@@ -40,93 +36,97 @@ public class Dispatcher implements DispatcherInterface {
           }
     }
     */
-    public synchronized String dispatch(String request)
-    {
+
+    private DispatcherService getDispatcher(JsonObject jsonRequest) {
+        String dispatcherString = jsonRequest.get("dispatcher").getAsString();
+        return (DispatcherService) dispatchers.get(dispatcherString);
+    }
+
+    // TODO: Extract to class
+    public Method getMethodFromJson(DispatcherService dispatcher, JsonObject jsonRequest) {
+        Method[] methods = dispatcher.getClass().getMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(jsonRequest.get("method").getAsString()))
+                return method;
+        }
+
+        return null;
+    }
+
+    // TODO: Extract to class
+    public String[] stringifyParametersToArray(JsonObject jsonRequest) {
+        JsonObject jsonParams = jsonRequest.get("params").getAsJsonObject();
+
+        Set<Map.Entry<String, JsonElement>> entrySet = jsonParams.entrySet();
+
+        String[] params = new String[entrySet.size()];
+
+        int i = 0;
+        for (Map.Entry<String, JsonElement> entry : entrySet) {
+            params[i++] = entry.getValue().getAsString();
+        }
+
+        return params;
+    }
+
+    // TODO: Extract to class
+    public Object[] typifyParameters(String[] parameters, Class[] types) {
+        Object[] typedParameters = new Object[parameters.length];
+
+        for(int i = 0; i < parameters.length; i++) {
+            switch (types[i].getCanonicalName()) {
+                case "java.lang.Long":
+                    typedParameters[i] = Long.parseLong(parameters[i]);
+                    break;
+                case "java.lang.Integer":
+                    typedParameters[i] = Integer.parseInt(parameters[i]);
+                    break;
+                case "java.lang.String":
+                    typedParameters[i] = parameters[i];
+                    break;
+            }
+        }
+
+        return typedParameters;
+    }
+
+    public JsonObject getRemoteMethodResponseObject(DispatcherService dispatcher, Method method, Object[] parameters) {
         JsonObject jsonReturn = new JsonObject();
+
+        try {
+            String ret = method.invoke(dispatcher, parameters).toString();
+            jsonReturn.addProperty("ret", ret);
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonReturn.addProperty("error", "Error while trying to invoke remote method.");
+        }
+
+        return jsonReturn;
+    }
+
+    public synchronized String dispatch(String request) {
         JsonParser parser = new JsonParser();
         JsonObject jsonRequest = parser.parse(request).getAsJsonObject();
 
-        System.out.println(jsonRequest.get("dispatcher"));
+        DispatcherService dispatcher = getDispatcher(jsonRequest);
+        Method method = getMethodFromJson(dispatcher, jsonRequest);
+        Class[] types = method.getParameterTypes();
 
-        try {
-            // Obtains the object pointing to SongServices
-            Object object = dispatchers.get(jsonRequest.get("dispatcher").getAsString());
-            Method[] methods = object.getClass().getMethods();
-            Method method = null;
-            // Obtains the method
-            for (int i=0; i<methods.length; i++)
-            {
-                if (methods[i].getName().equals(jsonRequest.get("method").getAsString()))
-                    method = methods[i];
-            }
-            if (method == null)
-            {
-                jsonReturn.addProperty("error", "Method does not exist");
-                return jsonReturn.toString();
-            }
-            // Prepare the  parameters
-            Class[] types =  method.getParameterTypes();
-            Object[] parameter = new Object[types.length];
-            String[] strParam = new String[types.length];
-            JsonObject jsonParam = jsonRequest.get("params").getAsJsonObject();
-            int j = 0;
-            for (Map.Entry<String, JsonElement>  entry  :  jsonParam.entrySet())
-            {
-                strParam[j++] = entry.getValue().getAsString();
-            }
-            // Prepare parameters
-            for (int i=0; i<types.length; i++)
-            {
-                switch (types[i].getCanonicalName())
-                {
-                    case "java.lang.Long":
-                        parameter[i] =  Long.parseLong(strParam[i]);
-                        break;
-                    case "java.lang.Integer":
-                        parameter[i] =  Integer.parseInt(strParam[i]);
-                        break;
-                    case "java.lang.String":
-                        parameter[i] = new String(strParam[i]);
-                        break;
-                }
-            }
-            // Prepare the return
-            Class returnType = method.getReturnType();
-            String ret = "";
-            switch (returnType.getCanonicalName())
-                {
-                    case "java.lang.Long":
-                        ret = method.invoke(object, parameter).toString();
-                        break;
-                    case "java.lang.Integer":
-                         ret = method.invoke(object, parameter).toString();
-                        break;
-                    case "java.lang.String":
-                        ret = (String)method.invoke(object, parameter);
-                        break;
-                }
-                jsonReturn.addProperty("ret", ret);
+        String[] strParams = stringifyParametersToArray(jsonRequest);
+        Object[] parameters = typifyParameters(strParams, types);
 
-        } catch (InvocationTargetException | IllegalAccessException e)
-        {
-            System.out.println(e);
-            e.printStackTrace();
-            jsonReturn.addProperty("error", "Error on " + jsonRequest.get("objectName").getAsString() + "" + jsonRequest.get("remoteMethod").getAsString());
-        }
-
-        return jsonReturn.toString();
+        return getRemoteMethodResponseObject(dispatcher, method, parameters).toString();
     }
 
     /*
-    * registerObject: It register the objects that handle the request
-    * @param remoteMethod: It is the name of the method that
-    *  objectName implements.
-    * @objectName: It is the core class that contaions the remote methods
-    * each object can contain several remote methods
-    */
+     * registerObject: It register the objects that handle the request
+     * @param remoteMethod: It is the name of the method that
+     *  objectName implements.
+     * @objectName: It is the core class that contaions the remote methods
+     * each object can contain several remote methods
+     */
     @Deprecated
-    public void registerDispatcher(Object remoteMethod, String objectName)
-    {
+    public void registerDispatcher(Object remoteMethod, String objectName) {
         dispatchers.put(objectName, remoteMethod);
     }
 
