@@ -9,38 +9,43 @@ import java.io.InputStream;
 import java.util.Base64;
 
 public class LoginDispatcher implements DispatcherService {
-    static final int FRAGMENT_SIZE = 8192;
+    private static final int FRAGMENT_SIZE = 8192;
 
     /*
      * login: return login token if authorized
      * @param username: the username from client
      * @param password: the password from client
      */
-    public String login(String username, String password) throws IOException
-    {
-        User currentSession = Server.usersInfo.get(username+password);
+    public String login(String username, String password) throws IOException {
+        User user = Server.usersInfo.get(username+password);
 
-        System.out.println(Server.usersInfo);
+        if (user != null) {
+            // User is valid, give token
+            Server.currentSessions.add(user);
+            System.out.println(Server.usersInfo);
 
-        Server.currentSessions.add(currentSession);
+            JsonObject loginToken = new JsonObject();
+            loginToken.addProperty("loginToken", Integer.toString(Server.currentSessions.indexOf(user)));
 
-        JsonObject loginToken = new JsonObject();
-        if(currentSession != null)
-        {
-            loginToken.addProperty("loginToken", Integer.toString(Server.currentSessions.indexOf(currentSession)));
-            System.out.println(loginToken);
-        } else {
-            loginToken.addProperty("loginToken", Integer.toString(Server.currentSessions.size() - 1));
+            return bytetize(loginToken.toString());
         }
 
-        byte[] loginBytes = loginToken.toString().getBytes();
+        return null;
+    }
 
-        byte buf[] = new byte[FRAGMENT_SIZE];
+    // TODO: Move to serializer or something similar (...also give it a better name.)
+    private String bytetize(String str) {
+        byte[] strBytes = str.toString().getBytes();
 
-        System.out.println("LoginDispatcher is getting chunk");
-        InputStream inputStream = new ByteArrayInputStream(loginBytes);
-        inputStream.read(buf);
-        inputStream.close();
+        byte[] buf = new byte[FRAGMENT_SIZE];
+
+        InputStream is = new ByteArrayInputStream(strBytes);
+        try {
+            is.read(buf);
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return Base64.getEncoder().encodeToString(buf);
     }
