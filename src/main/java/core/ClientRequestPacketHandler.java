@@ -9,7 +9,7 @@ public class ClientRequestPacketHandler extends Thread {
     private DatagramPacket packet = null;
     public Dispatcher dispatcher = null;
 
-    public ClientRequestPacketHandler(DatagramSocket s, DatagramPacket d){
+    ClientRequestPacketHandler(DatagramSocket s, DatagramPacket d){
         this.socket = s;                                            // Set socket
         this.packet = d;                                            // Set packet as received request packet
 
