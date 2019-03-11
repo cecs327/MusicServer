@@ -8,6 +8,7 @@ import model.User;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -116,5 +117,22 @@ public class Serializer {
             out.flush();
             return bos.toByteArray();
         }
+    }
+
+    // TODO: Implement and test
+    public static byte[] serialize(Object object, int size) {
+        byte[] stream = null;
+
+        try {
+            var baos = new ByteArrayOutputStream();
+            var oos = new ObjectOutputStream(baos);
+
+            oos.writeObject(object);
+            stream = Arrays.copyOfRange(baos.toByteArray(), 0, size);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return stream;
     }
 }

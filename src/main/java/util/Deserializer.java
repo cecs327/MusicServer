@@ -1,6 +1,9 @@
 package util;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import model.*;
 import model.Collection;
@@ -10,7 +13,6 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
-
 /**
  * This class deserializes both the Music and User JSON into POJOs.
  * Contains data structures to hold:
@@ -19,69 +21,67 @@ import java.util.*;
  * 3. a lookup of song information by release ID, and
  * 4. the user's set of owned mp3s (from the music folder)
  */
+
 public class Deserializer {
     private static final Logger LOGGER = Logger.getLogger(Deserializer.class);
+    public static final URL MUSIC_STREAM = Deserializer.class.getResource("/music.json");
+    public static final URL USER_STREAM = Deserializer.class.getResource("/user.json");
+    public static final String MUSIC_FOLDER = Deserializer.class.getResource("/music/").getPath();
+
     /**
      * A list of ALL songs (from the Music JSON).
      */
-    ArrayList<Collection> musicDatabase;
+    private List<Collection> musicDatabase;
 
     /**
      * A container of references for PLAYABLE songs
      * (i.e. the song's mp3 file exists in the music directory).
      */
-    HashMap<Integer, String> playableSongs; // key: song release ID, value: mp3 file name
+    private HashMap<Integer, String> playableSongs; // key: song release ID, value: mp3 file name
 
     /**
      * A dictionary of the user's music library (as Collection objects).
      */
-    HashMap<Integer, Collection> userLibrary; // key: song release ID, value: corresponding Collection object
+    private HashMap<Integer, Collection> userLibrary; // key: song release ID, value: corresponding Collection object
 
     /**
      * The song release IDs present in the music directory.
      * Used for quick lookup of available music.
      */
-    HashSet<Integer> ownedIDs;
+    private HashSet<Integer> ownedIDs;
 
     public Deserializer() throws IOException {
-        musicDatabase = new ArrayList<>();
         userLibrary = new HashMap<>();
         ownedIDs = new HashSet<>();
 
+        musicDatabase = deserializeSongsFromJson();
         loadOwnedMusicIDs();
-        musicDatabase = (ArrayList) deserializeSongsFromJson();
 
         // userLibrary = setUserLibrary();
     }
 
     // Loads the song IDs of OWNED music into a Set for lookup.
     private void loadOwnedMusicIDs() {
-        String musicPath = Thread.currentThread().getContextClassLoader().getResource("music").getPath();
+        File dir = new File(MUSIC_FOLDER);
+        File[] files = Objects.requireNonNull(dir.listFiles(), "ERROR: Attempt to listFiles() from Music folder " +
+                "directory turned up NULL. Check to see that MUSIC_FOLDER points to a directory, not a file");
+        for (File file : files) {
+            String filename = trimMp3Extension(file.getName());
 
-        System.out.println(musicPath);
-
-        File dir = new File(musicPath);
-        System.out.println(dir.listFiles());
-        for (File file : dir.listFiles()) {
-            String filename = file.getName();
-
-            if (filename.length() < 5)
-                throw new ArrayIndexOutOfBoundsException("Deserializer.loadOwnedMusicIDs() - File name is too short.");
-
-            // Trim the ".mp3" extension from file name
-            String mp3Name;
-            if(filename.substring(filename.length()-3, filename.length()).equals("mp3"))
-                mp3Name = filename.substring(0, filename.length() - 4);
+            if (filename.matches("^\\d{5,}$"))
+                ownedIDs.add(Integer.parseInt(filename));
             else
-                mp3Name = filename;
-            System.out.println(mp3Name);
-
-            if (mp3Name.matches("[\\d]+"))
-                ownedIDs.add(Integer.parseInt(mp3Name));
-            else
-                throw new NumberFormatException("Error: mp3 name isn't a song ID");
+                throw new IllegalStateException("Invalid file format; Music file must be an mp3 with > 4 character");
         }
 
+    }
+
+private String trimMp3Extension(String filename) {
+
+        if(filename.substring(filename.length()-3).equals("mp3"))
+            return filename.substring(0, filename.length() - 4);
+        // TODO: technically fails if some file has any other extension, since it doesnt trim it
+        return filename;
     }
 
     /**
@@ -92,171 +92,42 @@ public class Deserializer {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public List<Collection> deserializeSongsFromJson() throws IOException {
+    private List<Collection> deserializeSongsFromJson() {
         List<Collection> songs = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        getClass().getResourceAsStream("/music.json")));
-
-
-             JsonReader jsonReader = new JsonReader(br)) {
-
+        try {
             Gson gson = new Gson();
+            BufferedReader br = new BufferedReader(new InputStreamReader(MUSIC_STREAM.openStream()));
 
-            // Clear the first "[" in the json file
-            jsonReader.beginArray();
+            JsonArray jsonArray = gson.fromJson(br, JsonArray.class);
 
-            // Parse the json file
-            while (jsonReader.hasNext()) {
-                // Clear the first "{" for each json object
-                jsonReader.beginObject();
-
-                jsonReader.nextName();
-                Release release = gson.fromJson(jsonReader, Release.class);
-
-                jsonReader.nextName();
-                Artist artist = gson.fromJson(jsonReader, Artist.class);
-
-                jsonReader.nextName();
-                Song song = gson.fromJson(jsonReader, Song.class);
-
-                jsonReader.endObject();
+            for (JsonElement jsonElement : jsonArray) {
+                JsonObject jsonObject = jsonElement.getAsJsonObject();
+                Release release = gson.fromJson(jsonObject.get("release"), Release.class);
+                Artist artist = gson.fromJson(jsonObject.get("artist"), Artist.class);
+                Song song = gson.fromJson(jsonObject.get("song"), Song.class);
 
                 songs.add(new Collection(release, artist, song));
-
-                /*
-                // Check if artist was previously parsed
-                for (int i = 0; i < musicDatabase.size(); i++) {
-                    Artist artistInCollection = musicDatabase.get(i).getArtist();
-
-                    if (artistInCollection.getName().equals(artist.getName())) {
-                        oldArtist = true;
-                        musicDatabase.add(new Collection(release, artistInCollection, song));
-                        break;
-                    }
-                }
-                if (!oldArtist) {
-                    Collection newCollection = new Collection(release, artist, song);
-
-                    musicDatabase.add(newCollection);
-
-                    if (ownedIDs.contains((int) newCollection.getId()))
-                        userLibrary.put((int) newCollection.getId(), newCollection);
-                }
-                */
             }
-            jsonReader.endArray();
+
+            return songs;
+        } catch (IOException e) {
+            LOGGER.error("ERROR: deserializeSongsFromJson >> " + e);
+            return null;
         }
-
-        return songs;
-    }
-
-    public List<Collection> deserializeMusicLibrary() throws IOException {
-        List<Collection> musicDatabase = new ArrayList<>();
-
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("/music.json")));
-             JsonReader jsonReader = new JsonReader(br)) {
-
-            Gson gson = new Gson();
-
-            // Clear the first "[" in the json file
-            jsonReader.beginArray();
-
-            // Parse the json file
-            while (jsonReader.hasNext()) {
-                Release release;
-                Artist artist;
-                Song song;
-
-                // If the artist has already been parsed, don't add new object.
-                boolean oldArtist = false;
-
-                // Clear the first "{" for each json object
-                jsonReader.beginObject();
-
-                jsonReader.nextName();
-                release = gson.fromJson(jsonReader, Release.class);
-
-                jsonReader.nextName();
-                artist = gson.fromJson(jsonReader, Artist.class);
-
-                jsonReader.nextName();
-                song = gson.fromJson(jsonReader, Song.class);
-
-                jsonReader.endObject();
-
-                // Check if artist was previously parsed
-                for (int i = 0; i < musicDatabase.size(); i++) {
-                    Artist artistInCollection = musicDatabase.get(i).getArtist();
-
-                    if (artistInCollection.getName().equals(artist.getName())) {
-                        oldArtist = true;
-                        musicDatabase.add(new Collection(release, artistInCollection, song));
-                        break;
-                    }
-                }
-                if (!oldArtist) {
-                    musicDatabase.add(new Collection(release, artist, song));
-                }
-            }
-            jsonReader.endArray();
-        }
-        return musicDatabase;
-    }
-
-    /**
-     * Deserializes a single Playlist from the "playlists" json array.
-     * A helper function for deserializeUsers().
-     *
-     * @param reader - The parent method's JsonReader
-     * @return
-     * @throws IOException
-     */
-    private Playlist deserializePlaylist(JsonReader reader) throws IOException {
-        reader.beginObject(); // Playlist object '{'
-        String playlistName = reader.nextName();
-        reader.beginArray(); // "playlists" array '['
-
-        // Read each ID in the playlist
-        ArrayList<Integer> songIDs = new ArrayList<>();
-        while (reader.hasNext())
-            songIDs.add(reader.nextInt());
-
-        reader.endArray(); // "playlists" ']'
-        reader.endObject(); // Playlist object '}'
-
-        Playlist playlist = new Playlist(playlistName);
-
-        if (playableSongs == null)
-            throw new NullPointerException("\"UsersDeserializer.deserializePlaylists() - HashMap playableSongs.\n");
-
-        // Add each Collection referenced (as an ID) in the playlist JsonArray to a Playlist.
-        for (int id : songIDs) {
-            // Retrieve Collection from a pre-loaded HashMap
-            Collection c = userLibrary.get(id);
-
-            if (c != null)
-                playlist.addToPlaylist(c);
-            else
-                System.out.println("Deserializer.deserializePlaylist() - Failed to add Collection ID: " + id + " to Playlist");
-        }
-        return playlist;
     }
 
     /**
      * Parses the User JSON file and returns a list of User objects.
      *
-     * @return
+     * @return List<User>
      * @throws IOException
      */
     public List<User> deserializeUsers() throws IOException {
         List<User> users = new ArrayList<>();
-
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("/user.json")));
-             JsonReader jr = new JsonReader(br)) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(USER_STREAM.openStream()));
+            JsonReader jr = new JsonReader(br);
 
             jr.beginObject(); // file start '{'
 
@@ -301,17 +172,52 @@ public class Deserializer {
             jr.endObject(); // file end
         } catch (Exception e) {
             LOGGER.error("Error while deserializing users: " , e);
-        } finally {
-            return users;
         }
+
+        return users;
     }
 
+    /**
+     * Deserializes a single Playlist from the "playlists" json array.
+     * A helper function for deserializeUsers().
+     *
+     * @param reader - The parent method's JsonReader
+     * @return
+     * @throws IOException
+     */
+    private Playlist deserializePlaylist(JsonReader reader) throws IOException {
+        reader.beginObject(); // Playlist object '{'
+        String playlistName = reader.nextName();
+        reader.beginArray(); // "playlists" array '['
+
+        // Read each ID in the playlist
+        ArrayList<Integer> songIDs = new ArrayList<>();
+        while (reader.hasNext())
+            songIDs.add(reader.nextInt());
+
+        reader.endArray(); // "playlists" ']'
+        reader.endObject(); // Playlist object '}'
+
+        Playlist playlist = new Playlist(playlistName);
+
+        // Add each Collection referenced (as an ID) in the playlist JsonArray to a Playlist.
+        for (int id : songIDs) {
+            // Retrieve Collection from a pre-loaded HashMap
+            Collection c = userLibrary.get(id);
+
+            if (c != null)
+                playlist.addToPlaylist(c);
+            else
+                System.out.println("Deserializer.deserializePlaylist() - Failed to add Collection ID: " + id + " to Playlist");
+        }
+        return playlist;
+    }
     /**
      * Returns the song information in the Music JSON as an ArrayList.
      *
      * @return
      */
-    public ArrayList<Collection> getMusicDatabase() {
+    public List<Collection> getMusicDatabase() {
         return musicDatabase;
     }
 
