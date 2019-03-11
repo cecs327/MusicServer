@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Server {
 
@@ -25,13 +26,14 @@ public class Server {
 
     public static List<Collection> songList;
 
+    public static Map<String, String> requestCache;
+
     public static void main(String [] args)
     {
         try {
             d = new Deserializer();
             songList = d.getMusicDatabase();
             userList = d.deserializeUsers();
-            currentSessions.add(new User("dummy", "dummy", "dummy"));
             for (User u : userList) {
                 if (usersInfo.containsValue(u)) {
                     throw new IllegalStateException("Duplicate user found in usersInfo");

@@ -20,7 +20,6 @@ public class Dispatcher implements DispatcherInterface {
     private static final Logger LOGGER = Logger.getLogger(Dispatcher.class);
     private HashMap<String, Object> dispatchers;
 
-
     public Dispatcher() {
         dispatchers = new HashMap<String, Object>();
     }
@@ -39,13 +38,41 @@ public class Dispatcher implements DispatcherInterface {
     }
     */
 
+    public synchronized String dispatch(String request) {
+        JsonParser parser = new JsonParser();
+        JsonObject jsonRequest = parser.parse(request).getAsJsonObject();
+
+        String callSemantic = jsonRequest.get("callSemantic").getAsString();
+        String requestId = jsonRequest.get("requestId").getAsString();
+
+        // Check cache before retrieving other fields, since the response might already exist.
+        if (callSemantic.equals("AT_MOST_ONCE")) {
+            if (Server.requestCache.containsKey(requestId)) {
+                return Server.requestCache.get(requestId);
+            }
+        }
+
+        Dispatcher dispatcher = getDispatcher(jsonRequest);
+        Method method = getMethodFromJson(dispatcher, jsonRequest);
+        Class[] types = method.getParameterTypes();
+
+        String[] strParams = stringifyParametersToArray(jsonRequest);
+        Object[] parameters = typifyParameters(strParams, types);
+
+        String response = getRemoteMethodResponseObject(dispatcher, method, parameters).toString();
+
+        Server.requestCache.put(requestId, response);
+
+        return response;
+    }
+
     private Dispatcher getDispatcher(JsonObject jsonRequest) {
         String dispatcherString = jsonRequest.get("dispatcher").getAsString();
         return (Dispatcher) dispatchers.get(dispatcherString);
     }
 
     // TODO: Extract to class
-    public Method getMethodFromJson(Dispatcher dispatcher, JsonObject jsonRequest) {
+    private Method getMethodFromJson(Dispatcher dispatcher, JsonObject jsonRequest) {
         Method[] methods = dispatcher.getClass().getMethods();
         for (Method method : methods) {
             if (method.getName().equals(jsonRequest.get("method").getAsString()))
@@ -104,20 +131,6 @@ public class Dispatcher implements DispatcherInterface {
         }
 
         return jsonReturn;
-    }
-
-    public synchronized String dispatch(String request) {
-        JsonParser parser = new JsonParser();
-        JsonObject jsonRequest = parser.parse(request).getAsJsonObject();
-
-        Dispatcher dispatcher = getDispatcher(jsonRequest);
-        Method method = getMethodFromJson(dispatcher, jsonRequest);
-        Class[] types = method.getParameterTypes();
-
-        String[] strParams = stringifyParametersToArray(jsonRequest);
-        Object[] parameters = typifyParameters(strParams, types);
-
-        return getRemoteMethodResponseObject(dispatcher, method, parameters).toString();
     }
 
     /*

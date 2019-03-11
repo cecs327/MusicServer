@@ -21,7 +21,7 @@ public class ServerCommunicationProtocol extends Thread{
         this.portNumber = num;
     }
 
-    public void connect(){                        // portNumber must be > 1023
+    private void connect(){                        // portNumber must be > 1023
         try{
             mySocket = new DatagramSocket(this.portNumber);                             // Initialize socket
             System.out.println("ServerSocket opened on port: "+ this.portNumber);
@@ -30,7 +30,7 @@ public class ServerCommunicationProtocol extends Thread{
         }
     }
 
-    public void listen(){                                       // Opens client socket and listens for requests
+    private void listen(){                                       // Opens client socket and listens for requests
         System.out.println("Server listening.");
         try{
             while(true) {
@@ -42,7 +42,7 @@ public class ServerCommunicationProtocol extends Thread{
                 Thread t = new ClientRequestPacketHandler(mySocket, requestPacket);
                 t.start();
             }
-        }catch (IOException e) {
+        } catch (IOException e) {
             System.out.println(e);
         }
     }
