@@ -12,7 +12,7 @@ import java.util.Base64;
 import java.util.List;
 
 
-public class SearchResultDispatcher implements DispatcherService {
+public class SearchResultDispatcher extends Dispatcher implements DispatcherService {
     static final int FRAGMENT_SIZE = 8192;
 
     /*

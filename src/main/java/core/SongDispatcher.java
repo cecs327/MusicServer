@@ -11,7 +11,7 @@ import java.util.Objects;
 * @version 0.15
 * @since   02-11-2019 
 */
-public class SongDispatcher implements DispatcherService
+public class SongDispatcher extends Dispatcher implements DispatcherService
 {
     private static final int FRAGMENT_SIZE = 8192;
 

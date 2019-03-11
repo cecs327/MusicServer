@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
-public class PlaylistDispatcher implements DispatcherService {
-    static final int FRAGMENT_SIZE = 8192;
+public class PlaylistDispatcher extends Dispatcher implements DispatcherService {
+    private static final int FRAGMENT_SIZE = 8192;
 
     public PlaylistDispatcher()
     {
@@ -47,7 +47,6 @@ public class PlaylistDispatcher implements DispatcherService {
     {
         User currentSession = Server.currentSessions.get(userToken);
         Profile userProfile = currentSession.getUserProfile();
-
 
         JsonArray playlistListJA = new JsonArray();
         for(Playlist p : userProfile.getIterablePlaylists()) {
