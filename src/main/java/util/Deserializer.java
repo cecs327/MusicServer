@@ -50,12 +50,13 @@ public class Deserializer {
      */
     private HashSet<Integer> ownedIDs;
 
-    public Deserializer() throws IOException {
+    public Deserializer() {
         userLibrary = new HashMap<>();
         ownedIDs = new HashSet<>();
 
         musicDatabase = deserializeSongsFromJson();
         loadOwnedMusicIDs();
+        initUserLibrary();
 
         // userLibrary = setUserLibrary();
     }
@@ -76,8 +77,7 @@ public class Deserializer {
 
     }
 
-private String trimMp3Extension(String filename) {
-
+    private String trimMp3Extension(String filename) {
         if(filename.substring(filename.length()-3).equals("mp3"))
             return filename.substring(0, filename.length() - 4);
         // TODO: technically fails if some file has any other extension, since it doesnt trim it
@@ -117,13 +117,21 @@ private String trimMp3Extension(String filename) {
         }
     }
 
+    private void initUserLibrary() {
+        for (Collection c : musicDatabase) {
+            if (ownedIDs.contains((int) c.getId())) {
+                userLibrary.put((int) c.getId(), c);
+            }
+        }
+    }
+
     /**
      * Parses the User JSON file and returns a list of User objects.
      *
      * @return List<User>
      * @throws IOException
      */
-    public List<User> deserializeUsers() throws IOException {
+    public List<User> deserializeUsers() {
         List<User> users = new ArrayList<>();
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(USER_STREAM.openStream()));

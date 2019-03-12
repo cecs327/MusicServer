@@ -28,23 +28,19 @@ public class Server {
 
     public static Map<String, String> requestCache;
 
-    public static void main(String [] args)
-    {
-        try {
-            d = new Deserializer();
-            songList = d.getMusicDatabase();
-            userList = d.deserializeUsers();
-            for (User u : userList) {
-                if (usersInfo.containsValue(u)) {
-                    throw new IllegalStateException("Duplicate user found in usersInfo");
-                }
-                usersInfo.put(u.getUsername()+u.getPassword(), u);
+    public static void main(String [] args) {
+        requestCache = new HashMap<>();
+        d = new Deserializer();
+        songList = d.getMusicDatabase();
+        userList = d.deserializeUsers();
+        for (User u : userList) {
+            if (usersInfo.containsValue(u)) {
+                throw new IllegalStateException("Duplicate user found in usersInfo");
             }
-
-            ServerCommunicationProtocol scp = new ServerCommunicationProtocol(PORT_NUMBER);
-            scp.start();
-        } catch (IOException e) {
-            e.printStackTrace();
+            usersInfo.put(u.getUsername()+u.getPassword(), u);
         }
+
+        ServerCommunicationProtocol scp = new ServerCommunicationProtocol(PORT_NUMBER);
+        scp.start();
     }
 }
