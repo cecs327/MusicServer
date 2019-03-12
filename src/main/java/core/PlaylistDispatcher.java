@@ -6,6 +6,7 @@ import model.Collection;
 import model.Playlist;
 import model.Profile;
 import model.User;
+import util.Serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -72,6 +73,35 @@ public class PlaylistDispatcher extends Dispatcher implements DispatcherService 
 
         Server.bytePlaylists = playlistListJA.toString().getBytes();
         return  Server.bytePlaylists.length;
+    }
+
+    public String deletePlaylist(Integer userToken, String playlistName) throws IOException {
+        Serializer s = new Serializer();
+        User currentSession = Server.currentSessions.get(userToken);
+        currentSession.getUserProfile().removePlaylist(playlistName);
+        s.updateUsersJson(Server.userList);
+
+        JsonObject ackMessage = new JsonObject();
+        ackMessage.addProperty("Ack:", "Playlist \"" + playlistName + "\" deleted");
+        // TODO: need encoding
+        return ackMessage.toString();
+    }
+
+    public String addSongToPlaylist(Integer userToken, String playlistName, Long songID) throws IOException {
+        Serializer s = new Serializer();
+        User currentSession = Server.currentSessions.get(userToken);
+
+        // Add playlist to profile if not already added
+        currentSession.getUserProfile().addPlaylist(playlistName, new Playlist(playlistName));
+
+        // Add the song to the playlist as a Collection
+        currentSession.getUserProfile().getPlaylist(playlistName).addToPlaylist(Server.d.getUserLibrary().get(Math.toIntExact(songID)));
+        s.updateUsersJson(Server.userList);
+
+        JsonObject ackMessage = new JsonObject();
+        ackMessage.addProperty("Ack:", "Song added to " + playlistName);
+        // TODO: need encoding
+        return ackMessage.toString();
     }
 }
 //[
