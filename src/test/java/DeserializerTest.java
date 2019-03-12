@@ -11,12 +11,7 @@ class DeserializerTest {
 
     @BeforeAll
     static void setup() {
-        try {
-            deserializer = new Deserializer();
-        } catch (IOException e) {
-            System.out.println("Error: Deserializer could not successfully be made");
-            e.printStackTrace();
-        }
+        deserializer = new Deserializer();
     }
 
     @Test
